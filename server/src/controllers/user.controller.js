@@ -1,6 +1,6 @@
-import User from "../models/user.model";
-import { generateToken } from "../utils/generateToken";
-import { validateSignupInput } from "../utils/validateInput"
+import User from "../models/user.model.js";
+import { generateToken } from "../utils/generateToken.js";
+import { validateSignupInput } from "../utils/validateInput.js"
 import bcrypt from 'bcrypt'
 
 const signup=async (req,res)=>{
@@ -67,6 +67,7 @@ const login=async (req,res)=>{
 const logout=(req,res)=>{
   try {
     res.cookie('token','',{maxAge:0})
+    res.status(200).json({message:"Logout successfull"})
   } catch (error) {
      console.log('Error in logout : ',error)
     res.status(500).json({message:"Internal server error"})
