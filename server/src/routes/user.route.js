@@ -1,12 +1,13 @@
 import express from 'express'
-import { login, logout, signup } from '../controllers/user.controller.js'
+import { checkAuth, login, logout, signup } from '../controllers/user.controller.js'
+import { protectRoute } from '../middlewares/protect-route.js'
 
 const userRouter=express.Router()
 
 userRouter.post('/signup',signup)
 userRouter.post('/login',login)
 userRouter.post('/logout',logout)
-// userRouter.put('/update-profile',)
-// userRouter.get('/check-auth',)
+userRouter.put('/update-profile',protectRoute)
+userRouter.get('/check-auth',protectRoute,checkAuth)
 
 export default userRouter
