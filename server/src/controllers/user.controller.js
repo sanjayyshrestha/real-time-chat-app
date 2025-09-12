@@ -1,3 +1,4 @@
+import cloudinary from "../config/cloudinary.js";
 import User from "../models/user.model.js";
 import { generateToken } from "../utils/generateToken.js";
 import { validateSignupInput } from "../utils/validateInput.js"
@@ -74,6 +75,28 @@ const logout=(req,res)=>{
   }
 }
 
+const updateProfile=async(req,res)=>{
+  try {
+
+    const imageFilePath=req.file?.path;
+    let imageUrl;
+    if(imageFilePath){
+      const imageUpload= await cloudinary.uploader.upload(imageFilePath,{
+         resource_type:'image'
+       })
+      imageUrl=imageUpload.secure_url
+    }
+    const userId=req.user._id;
+    const updatedUser=await User.findByIdAndUpdate(userId,{profilePic:imageUrl},{new:true});
+
+    res.status(200).json(updatedUser)
+
+  } catch (error) {
+    console.log('Error in updating profile : ',error)
+    res.status(500).json({message:"Internal server error"})
+  }
+}
+
 
 const checkAuth=async (req,res)=>{
   try {
@@ -88,5 +111,6 @@ export {
   signup,
   login,
   logout,
-  checkAuth
+  updateProfile,
+  checkAuth,
 }
