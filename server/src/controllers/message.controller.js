@@ -1,5 +1,6 @@
-import Message from "../models/message.model";
-import User from "../models/user.model";
+import cloudinary from "../config/cloudinary.js";
+import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 
 const getUsersForSideBar = async (req, res) => {
   try {
@@ -35,18 +36,35 @@ const getMessages = async (req, res) => {
 
 const sendMessage=async(req,res)=>{
   try {
-    const {text}=req.body;
+    const text=req.body?.text;
     const userToChatId=req.params.id;
     const myId=req.user._id;
+    const imageFile=req.file;
+    let imageUrl;
+    if(imageFile){
+      const uploadResponse=await cloudinary.uploader.upload(imageFile.path,{
+        resource_type:'image'
+      })
+      imageUrl=uploadResponse.secure_url
+    }
     const newMessage=new Message({
       senderId:myId,
       receiverId:userToChatId,
-      text
+      text,
+      image:imageUrl
     })
+    await newMessage.save()
 
+    res.status(200).json(newMessage)
   
   } catch (error) {
     console.log("Error in sending messages : ", error);
     res.status(500).json({ message: "Internal server error" });
   }
+}
+
+export{
+  getUsersForSideBar,
+  getMessages,
+  sendMessage
 }

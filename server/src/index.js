@@ -4,6 +4,7 @@ import { connectDB } from "./config/db.js";
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import userRouter from "./routes/user.route.js";
+import messageRouter from "./routes/message.route.js";
 dotenv.config();
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(cookieParser())
 
 
 app.use('/api/auth',userRouter)
+app.use('/api/messages',messageRouter)
 connectDB()
   .then(() => {
     app.listen(PORT, () => {
