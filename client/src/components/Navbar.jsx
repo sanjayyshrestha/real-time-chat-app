@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { authUser, logout } = useAuthStore();
+  const { authUser, logout} = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
@@ -41,8 +41,8 @@ const Navbar = () => {
                     onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                     className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/50 transition-all duration-200 border border-slate-700/40"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
-                      {authUser.name?.charAt(0).toUpperCase() || "U"}
+                    <div className="w-8 h-8">
+                      <img className="size-8 rounded-full" src={authUser?.profilePic || '/user.webp'} alt="" />
                     </div>
                     <span className="text-slate-200 font-medium capitalize">
                       {authUser.name || "User"}
