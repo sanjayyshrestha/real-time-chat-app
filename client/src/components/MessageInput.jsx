@@ -1,101 +1,103 @@
-import React, { useState } from 'react'
-import { Image, Send, X } from 'lucide-react'
-import { useChatStore } from '../store/useChatStore'
+import React, { useEffect, useRef, useState } from "react";
+
+import { Image, Send, X } from "lucide-react";
+
+import { useChatStore } from "../store/useChatStore";
 
 const MessageInput = () => {
-  const { selectedUser, sendMessage } = useChatStore()
-  const [text, setText] = useState("")
-  const [image, setImage] = useState(null)
+  const [text, setText] = useState("");
+  const [image, setImage] = useState(null);
 
-  async function handleSendMessage(e) {
-    e.preventDefault()
-    if (!text.trim() && !image) return
-    
-    const formData = new FormData()
-    if (text.trim()) formData.append('text', text.trim())
-    if (image) formData.append('image', image)
-    
-    setText("")
+  const fileInputRef = useRef(null);
+
+
+  const { sendMessage } = useChatStore();
+
+
+
+  const removeImage = () => {
     setImage(null)
-    await sendMessage(formData)
-  }
 
-  const isDisabled = !text.trim() && !image
+    if(fileInputRef.current) fileInputRef.current.value=""
+  };
 
+  const handleSendMessage = async (e) => {
+    e.preventDefault()
+
+    if(!text.trim() && !image) return;
+    
+    try {
+      const formData=new FormData();
+      if(text) formData.append('text',text)
+      if(image) formData.append('image',image)
+      await sendMessage(formData)
+
+      //clear the form
+      setText("")
+      setImage(null)
+      if(fileInputRef.current) fileInputRef.current.value=""
+    } catch (error) {
+      console.log('Failed to send message ',error)
+     
+    }
+  };
   return (
-    <div className="border-t border-gray-200 bg-white p-4">
-      {/* Image Preview */}
+    <div className="p-4 w-full">
       {image && (
-        <div className="mb-3">
-          <div className="inline-block relative">
-            <img 
-              src={URL.createObjectURL(image)} 
-              alt="Preview" 
-              className="w-20 h-20 rounded-lg object-cover border border-gray-200"
+        <div className="mb-3 flex items-center gap-2">
+          <div className="relative">
+            <img
+              src={URL.createObjectURL(image)}
+              alt="Preview"
+              className="size-20 object-cover rounded-lg border border-zinc-700"
             />
+
             <button
-              onClick={() => setImage(null)}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"
+              type="button"
+              onClick={removeImage}
+              className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-base-300 flex items-center justify-center"
             >
-              <X className="w-3 h-3" />
+              <X className="size-3" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Input Form */}
-      <form onSubmit={handleSendMessage} className="flex items-end gap-3">
-        {/* Text Input */}
-        <div className="flex-1 min-w-0">
-          <div className="relative">
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Type a message..."
-              rows="1"
-              className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500"
-              style={{ minHeight: '48px', maxHeight: '120px' }}
-              onInput={(e) => {
-                e.target.style.height = 'auto'
-                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          {/* Image Upload */}
-          <label
-            htmlFor="imageInput"
-            className="w-12 h-12 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center cursor-pointer transition-colors group"
-          >
-            <Image className="w-5 h-5 text-gray-600 group-hover:text-gray-800" />
-          </label>
+      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+        <div className="flex-1 flex gap-2 items-center">
           <input
-            type="file"
-            id="imageInput"
-            onChange={(e) => setImage(e.target.files[0])}
-            accept="image/*"
-            hidden
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Message"
+            className="w-full input input-bordered rounded-lg input-sm sm:input-md"
           />
 
-          {/* Send Button */}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={(e)=>setImage(e.target.files[0])}
+          />
+
           <button
-            type="submit"
-            disabled={isDisabled}
-            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all font-medium ${
-              isDisabled
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow-md'
+            type="button"
+            className={`flex btn btn-circle ${
+              image ? "text-emerald-500" : "text-zince-400"
             }`}
+            onClick={()=>fileInputRef.current?.click()}
           >
-            <Send className="w-5 h-5" />
+            <Image size={20} />
           </button>
         </div>
+
+        <button type="submit" className="btn btn-sm btn-circle" disabled={!text.trim()&&!image}>
+          <Send size={22} />
+        </button>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default MessageInput
+export default MessageInput;

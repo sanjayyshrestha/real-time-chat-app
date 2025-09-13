@@ -1,123 +1,82 @@
 import React, { useState } from "react";
+import { Camera, Mail, User } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, Calendar, User } from "lucide-react";
 
 const Profile = () => {
-  const { authUser, updateProfile, isUpdatingProfile } = useAuthStore();
-  const [selectedImage, setSelectedImage] = useState("");
+  const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+  const [selectedImg, setSelectedImg] = useState(null);
 
-  const handleProfilePicChange = (e) => {
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
+    console.log("File:", file);
+    if (!file) return;
+
     const formData = new FormData();
-    formData.append('image', file);
-    setSelectedImage(file);
+    formData.append("image", file); // ✅ correct method
     updateProfile(formData);
   };
 
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6">
-      <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl max-w-md w-full overflow-hidden border border-white/20">
-        
-        {/* Header Section with Gradient */}
-        <div className="h-24 bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 relative">
-          <div className="absolute inset-0 bg-black/10"></div>
-        </div>
+    <div className="h-screen pt-20">
+      <div className="max-w-2xl mx-auto p-4 py-8">
+        <div className="bg-base-300 rounded-xl p-6 space-y-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold">Profile</h1>
+            <p className="mt-2">Your profile information</p>
+          </div>
 
-        {/* Profile Content */}
-        <div className="px-8 pb-8 -mt-12 relative z-10">
-          
-          {/* Profile Picture Section */}
-          <div className="flex justify-center mb-6">
-            <div className="relative group">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white bg-gradient-to-br from-slate-100 to-slate-200">
-               
-                  <img
-                    src={selectedImage ? URL.createObjectURL(selectedImage) : authUser.profilePic || "/user.webp"}
-                    alt={authUser.name}
-                    className="w-full h-full object-cover"
-                  />
-                
-              </div>
-              
-              {/* Upload Overlay */}
-              <label
-                htmlFor="profilePicInput"
-                className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer flex items-center justify-center"
-              >
-                <div className="text-center text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <Camera className="w-5 h-5 mx-auto mb-1" />
-                  <span className="text-xs font-medium">Change</span>
-                </div>
-              </label>
-              
-              <input
-                type="file"
-                id="profilePicInput"
-                accept="image/*"
-                onChange={handleProfilePicChange}
-                className="hidden"
+          {/* avatar upload */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <img
+                src={selectedImg || authUser.profilePic || "/user.webp"}
+                alt="Profile"
+                className="size-32 rounded-full object-cover border-4"
               />
+              <label
+                htmlFor="avatar-upload"
+                className={`absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${
+                  isUpdatingProfile ? "animate-pulse pointer-events-none" : ""
+                }`}
+              >
+                <Camera className="w-5 h-5 text-base-200" />
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUpdatingProfile}
+                />
+              </label>
             </div>
+            <p className="text-sm text-zinc-400">
+              {isUpdatingProfile
+                ? "Uploading..."
+                : "Click the camera icon to update your photo"}
+            </p>
           </div>
 
-          {/* Update Status */}
-          {isUpdatingProfile && (
-            <div className="flex items-center justify-center mb-4">
-              <div className="flex items-center space-x-2 text-slate-600">
-                <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin"></div>
-                <span className="text-sm font-medium">Updating profile...</span>
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Full Name
               </div>
-            </div>
-          )}
-
-          {/* User Information */}
-          <div className="text-center space-y-4">
-            
-            {/* Name */}
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 mb-1 capitalize">
-                {authUser.name}
-              </h1>
-              <div className="w-12 h-0.5 bg-gradient-to-r from-slate-600 to-slate-700 mx-auto rounded-full"></div>
+              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                {authUser?.name}
+              </p>
             </div>
 
-            {/* Details Grid */}
-            <div className="space-y-4 pt-2">
-              
-              {/* Email */}
-              <div className="flex items-center justify-center space-x-3 text-slate-600">
-                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-medium truncate">{authUser.email}</span>
+            <div className="space-y-1">
+              <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email Address
               </div>
-
-              {/* Join Date */}
-              <div className="flex items-center justify-center space-x-3 text-slate-600">
-                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-medium">
-                  Joined: {new Date(authUser.createdAt).toLocaleDateString()}
-                </span>
-              </div>
+              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                {authUser?.email}
+              </p>
             </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="mt-8">
-            <button className="w-full bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg">
-              Edit Profile
-            </button>
           </div>
         </div>
       </div>

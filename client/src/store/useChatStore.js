@@ -40,19 +40,22 @@ export const useChatStore=create((set,get)=>({
       console.log('Error in getting messages : ',error)
     }
   },
-  subscribeToMessage : ()=>{
-    const {selectedUser,messages}=get()
+
+  subscribeToMessages : ()=>{
+    const {selectedUser}=get()
     if(!selectedUser) return
     const socket=useAuthStore.getState().socket;
     try {
       socket.on('newMessage',(newMessage)=>{
-        set({messages:[...messages,newMessage]})
+        set((state)=>({
+          messages:[...state.messages,newMessage]
+        }))
       })
     } catch (error) {
       console.log('Error is subscribing message : ',error)
     }
   },
-  unsubsribeToMessage : ()=>{
+  unsubscribeToMessage : ()=>{
     const socket=useAuthStore.getState().socket;
     socket.off('newMessage')
   }
