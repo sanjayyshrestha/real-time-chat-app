@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api } from "../lib/api";
+import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore=create((set,get)=>({
   users:[],
@@ -38,6 +39,22 @@ export const useChatStore=create((set,get)=>({
     } catch (error) {
       console.log('Error in getting messages : ',error)
     }
+  },
+  subscribeToMessage : ()=>{
+    const {selectedUser,messages}=get()
+    if(!selectedUser) return
+    const socket=useAuthStore.getState().socket;
+    try {
+      socket.on('newMessage',(newMessage)=>{
+        set({messages:[...messages,newMessage]})
+      })
+    } catch (error) {
+      console.log('Error is subscribing message : ',error)
+    }
+  },
+  unsubsribeToMessage : ()=>{
+    const socket=useAuthStore.getState().socket;
+    socket.off('newMessage')
   }
 }))
 

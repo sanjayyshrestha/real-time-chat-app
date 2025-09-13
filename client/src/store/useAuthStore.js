@@ -1,18 +1,19 @@
 import { create } from "zustand";
 import { api } from "../lib/api";
-
-export const useAuthStore = create((set) => ({
+import {io} from 'socket.io-client'
+export const useAuthStore = create((set,get) => ({
   authUser: null,
   isSigningUp: false,
   isCheckingAuth: true,
   isLoggingIn: false,
   isUpdatingProfile:false,
+  socket:null,
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {
       const res = await api.get("/auth/check-auth");
       set({ authUser: res.data });
-      console.log(res.data);
+      get().connectSocket()
     } catch (error) {
       console.log("Error in signup page : ", error);
     } finally {
@@ -24,6 +25,7 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await api.post("/auth/signup", data);
       set({ authUser: res.data });
+       get().connectSocket()
     } catch (error) {
       console.log("Error in signup page : ", error);
     } finally {
@@ -36,6 +38,7 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await api.post("/auth/login", data);
       set({ authUser: res.data });
+      get().connectSocket()
     } catch (error) {
       console.log("Error in login page : ", error);
     } finally {
@@ -61,4 +64,19 @@ export const useAuthStore = create((set) => ({
       console.log("Error in logout  : ", error);
     }
   },
+  connectSocket: ()=>{
+    const {authUser}=get()
+    const socket=io('http://localhost:5000',{
+      query:{
+        userId:authUser._id
+      }
+    })
+    socket.connect()
+    set({socket:socket})
+  },
+
+  disconnectSocket: ()=>{
+    if(get().socket?.connected) get().socket.disconnect()
+  },
+
 }));
