@@ -8,6 +8,7 @@ const SideBar = () => {
   const { getUsers, users, setSelectedUser, selectedUser } = useChatStore()
   const [searchTerm, setSearchTerm] = useState('')
 
+  // Fetch users on mount
   useEffect(() => {
     getUsers()
   }, [getUsers])
@@ -17,9 +18,9 @@ const SideBar = () => {
   )
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+    <div className="flex flex-col h-full w-80 bg-white border-r border-gray-200 fixed left-0 top-0 bottom-0">
+      {/* HEADER + SEARCH - Fixed at top */}
+      <div className="flex-shrink-0 p-6 border-b border-gray-100 bg-white">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
             <MessageCircle className="h-5 w-5 text-blue-600" />
@@ -29,8 +30,8 @@ const SideBar = () => {
             <MoreHorizontal className="h-5 w-5 text-gray-500" />
           </button>
         </div>
-        
-        {/* Search Bar */}
+
+        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -43,14 +44,16 @@ const SideBar = () => {
         </div>
       </div>
 
-      {/* Users List */}
+      {/* USERS LIST (SCROLLABLE) - Takes remaining space */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-3">
+          {/* Contacts Label */}
           <div className="flex items-center gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide mb-3 px-3">
             <Users className="h-3 w-3" />
             {filteredUsers.length} {filteredUsers.length === 1 ? 'Contact' : 'Contacts'}
           </div>
-          
+
+          {/* Users */}
           <div className="space-y-1">
             {filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -78,15 +81,17 @@ const SideBar = () => {
                         e.target.src = '/user.webp'
                       }}
                     />
-                    {/* Online status indicator */}
+                    {/* Online status */}
                     <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <h3 className={`font-medium truncate ${
-                        selectedUser?._id === user._id ? 'text-blue-900' : 'text-gray-900'
-                      }`}>
+                      <h3
+                        className={`font-medium truncate ${
+                          selectedUser?._id === user._id ? 'text-blue-900' : 'text-gray-900'
+                        }`}
+                      >
                         {user.name}
                       </h3>
                       <span className="text-xs text-gray-400">2m</span>
@@ -95,7 +100,7 @@ const SideBar = () => {
                       {user.lastMessage || 'No messages yet'}
                     </p>
                   </div>
-                  
+
                   {/* Unread badge */}
                   {user.unreadCount > 0 && (
                     <div className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded-full min-w-[20px] text-center">
@@ -108,7 +113,6 @@ const SideBar = () => {
           </div>
         </div>
       </div>
-
     </div>
   )
 }

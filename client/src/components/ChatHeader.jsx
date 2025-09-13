@@ -7,7 +7,7 @@ const ChatHeader = () => {
 
   if (!selectedUser) {
     return (
-      <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-center">
+      <div className="h-16  bg-white border-b border-gray-200 flex items-center justify-center">
         <div className="flex items-center gap-3 text-gray-500">
           <div className="w-8 h-8 bg-gray-100 rounded-full"></div>
           <span className="text-sm font-medium">Select a conversation to start messaging</span>
