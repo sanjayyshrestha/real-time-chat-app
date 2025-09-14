@@ -61,6 +61,7 @@ export const useAuthStore = create((set,get) => ({
     try {
       await api.post("/auth/logout");
       set({ authUser: null });
+      get().disconnectSocket()
     } catch (error) {
       console.log("Error in logout  : ", error);
     }
