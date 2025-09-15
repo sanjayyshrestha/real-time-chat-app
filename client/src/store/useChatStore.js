@@ -50,13 +50,12 @@ setSelectedUser: (user) => {
   try {
     // New messages
     socket.on('newMessage', (newMessage) => {
-      console.log(newMessage)
-      const messageFromOtherUser = selectedUser._id !== newMessage.senderId;
-      if (messageFromOtherUser) return;
-      set((state) => ({
-        messages: [...state.messages, newMessage],
-      }));
-    });
+  const exists = get().messages.some(m => m._id === newMessage._id);
+  if (!exists && selectedUser._id === newMessage.senderId) {
+    set(state => ({ messages: [...state.messages, newMessage] }));
+  }
+});
+
 
     // Typing events
     socket.on('typing', ({ senderId }) => {
