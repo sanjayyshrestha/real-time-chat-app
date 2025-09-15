@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Image, Send, X } from "lucide-react";
 
 import { useChatStore } from "../store/useChatStore";
+import { useAuthStore } from "../store/useAuthStore";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
@@ -12,7 +13,19 @@ const MessageInput = () => {
 
 
   const { sendMessage } = useChatStore();
+  const { socket, authUser } = useAuthStore();
+const { selectedUser } = useChatStore.getState();
 
+const handleTyping = (e) => {
+  setText(e.target.value);
+  if (socket && selectedUser) {
+    if (e.target.value.length > 0) {
+      socket.emit("typing", selectedUser._id);
+    } else {
+      socket.emit("stopTyping", selectedUser._id);
+    }
+  }
+};
 
 
   const removeImage = () => {
@@ -32,6 +45,10 @@ const MessageInput = () => {
       if(image) formData.append('image',image)
       await sendMessage(formData)
 
+       // stop typing after send
+    socket.emit("stopTyping", selectedUser._id);
+
+    
       //clear the form
       setText("")
       setImage(null)
@@ -68,7 +85,7 @@ const MessageInput = () => {
           <input
             type="text"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTyping}
             placeholder="Message"
             className="w-full input input-bordered rounded-lg input-sm sm:input-md"
           />

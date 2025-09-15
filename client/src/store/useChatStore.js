@@ -6,6 +6,7 @@ export const useChatStore=create((set,get)=>({
   users:[],
   selectedUser:null,
   messages:[],
+  typing:false,
   getUsers:async()=>{
     try {
       const res=await api.get('/messages/users')
@@ -16,13 +17,12 @@ export const useChatStore=create((set,get)=>({
     }
   },
 
-  setSelectedUser:(user)=>{
-    try {
-      set({selectedUser:user})
-    } catch (error) {
-      console.log("Error in selecting users : ", error);
-    }
-  },
+setSelectedUser: (user) => {
+  get().unsubscribeToMessage(); // remove old socket listeners
+  set({ selectedUser: user, typing: false }); // set new chat + reset typing
+  get().subscribeToMessages(); // add listeners for new chat
+},
+
 
   getMessages:async (userId)=>{
     try {
@@ -41,25 +41,49 @@ export const useChatStore=create((set,get)=>({
     }
   },
 
-  subscribeToMessages : ()=>{
-    const {selectedUser}=get()
-    if(!selectedUser) return
-    const socket=useAuthStore.getState().socket;
-    try {
-      socket.on('newMessage',(newMessage)=>{
-        const messageFromOtherUser=selectedUser._id !==newMessage.senderId
-        if(messageFromOtherUser) return
-        set((state)=>({
-          messages:[...state.messages,newMessage]
-        }))
-      })
-    } catch (error) {
-      console.log('Error is subscribing message : ',error)
-    }
-  },
-  unsubscribeToMessage : ()=>{
-    const socket=useAuthStore.getState().socket;
-    socket.off('newMessage')
+  subscribeToMessages: () => {
+  const { selectedUser } = get();
+  if (!selectedUser) return;
+
+  const socket = useAuthStore.getState().socket;
+
+  try {
+    // New messages
+    socket.on('newMessage', (newMessage) => {
+      console.log(newMessage)
+      const messageFromOtherUser = selectedUser._id !== newMessage.senderId;
+      if (messageFromOtherUser) return;
+      set((state) => ({
+        messages: [...state.messages, newMessage],
+      }));
+    });
+
+    // Typing events
+    socket.on('typing', ({ senderId }) => {
+      if (selectedUser._id === senderId) {
+        set({ typing: true });
+      }else{
+        set({typing:false})
+      }
+    });
+
+    socket.on('stopTyping', ({ senderId }) => {
+      if (selectedUser._id === senderId) {
+        set({ typing: false });
+      }
+    });
+  } catch (error) {
+    console.log('Error subscribing to events: ', error);
   }
+},
+
+unsubscribeToMessage: () => {
+  const socket = useAuthStore.getState().socket;
+  socket.off('newMessage');
+  socket.off('typing');
+  socket.off('stopTyping');
+},
+
+
 }))
 
